@@ -1,0 +1,10 @@
+import {render,screen,fireEvent,cleanup} from '@testing-library/react';
+import {MemoryRouter} from 'react-router-dom';
+import {afterEach,expect,it,vi} from 'vitest';
+import OfficialData from './OfficialData';
+const empty={available:false,total:null,items:[],notes:'Fora da cobertura'};
+vi.mock('./context',()=>({useApp:()=>({city:{code:'3205002',name:'Serra'}})}));
+vi.mock('./api',()=>({useApi:()=>({data:{health:empty,education:empty,works:empty,funding:empty,sanitation_management:{available:false,record:null,notes:'Gestão municipal'},ombudsman:{available:false,total:null,by_type:{},by_status:{},notes:'Sem dados'},falabr:{available:false,notes:'A API operacional exige autorização.',public_dashboard_url:'https://centralpaineis.cgu.gov.br/visualizar/resolveu'}}})}));
+afterEach(cleanup);
+it('shows missing collections without a fabricated zero count',()=>{render(<MemoryRouter><OfficialData/></MemoryRouter>);expect(screen.getByText('Dados não disponíveis para este município')).toBeTruthy();expect(screen.getAllByText('—').length).toBe(4)});
+it('separates the public dashboard from an authenticated FalaBR integration',()=>{render(<MemoryRouter><OfficialData/></MemoryRouter>);fireEvent.click(screen.getByRole('tab',{name:'Ouvidoria'}));expect(screen.getByText('A API operacional exige autorização.')).toBeTruthy();expect(screen.getByRole('link',{name:/Abrir Painel Resolveu/}).getAttribute('href')).toBe('https://centralpaineis.cgu.gov.br/visualizar/resolveu')});

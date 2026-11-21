@@ -1,0 +1,5 @@
+* text=auto eol=lf
+# Two trailing spaces are intentional Markdown line breaks in the supplied spec.
+*.md whitespace=-blank-at-eol
+*.png binary
+*.gz binary

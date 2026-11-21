@@ -1,0 +1,21 @@
+{
+  "name": "invisivel",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "setup": "node scripts/setup.mjs",
+    "dev": "node scripts/dev.mjs",
+    "start": "node scripts/dev.mjs --built",
+    "build": "npm --prefix apps/web run build",
+    "test": "node scripts/check.mjs",
+    "sync:data": "node scripts/python.mjs -m pipelines.all_sources",
+    "sync:services": "node scripts/python.mjs -m pipelines.public_services --output data/official",
+    "sync:es": "node scripts/python.mjs -m pipelines.es_sync --output data/official",
+    "import:sinisa": "node scripts/python.mjs -m pipelines.sinisa",
+    "test:e2e": "node scripts/e2e.mjs",
+    "cleanup": "node scripts/python.mjs -m app.maintenance"
+  },
+  "engines": {"node": ">=22.12"},
+  "devDependencies": {"playwright": "1.65.1"}
+}

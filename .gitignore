@@ -1,0 +1,17 @@
+node_modules/
+dist/
+.venv/
+__pycache__/
+.pytest_cache/
+.ruff_cache/
+*.pyc
+*.db
+*.db-*
+.env
+!.env.example
+work/
+.superpowers/
+playwright-report/
+test-results/
+data/uploads/
+data/official/sinisa-municipalities.json

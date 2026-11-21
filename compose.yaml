@@ -1,0 +1,57 @@
+services:
+  db:
+    image: postgis/postgis:16-3.5
+    environment:
+      POSTGRES_DB: invisivel
+      POSTGRES_USER: invisivel
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Defina POSTGRES_PASSWORD}
+    volumes:
+      - database:/var/lib/postgresql/data
+      - ./database/migrations/001_extensions.sql:/docker-entrypoint-initdb.d/001_extensions.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U invisivel -d invisivel"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+  app:
+    build: .
+    environment:
+      APP_ENV: production
+      AUTH_PROVIDER: supabase
+      DATABASE_URL: postgresql+psycopg://invisivel:${POSTGRES_PASSWORD}@db:5432/invisivel
+      PUBLIC_ORIGIN: https://${DOMAIN:?Defina DOMAIN}
+      SUPABASE_URL: ${SUPABASE_URL:?Defina SUPABASE_URL}
+      SUPABASE_ANON_KEY: ${SUPABASE_ANON_KEY:?Defina SUPABASE_ANON_KEY}
+      PORTAL_TRANSPARENCIA_API_KEY: ${PORTAL_TRANSPARENCIA_API_KEY:-}
+      ADMIN_EMAILS: ${ADMIN_EMAILS:?Defina ADMIN_EMAILS}
+      SEED_DEMO: "false"
+    volumes:
+      - uploads:/app/data/uploads
+      - official:/app/data/official
+    depends_on:
+      db:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "/app/.venv/bin/python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/api/v1/health')"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+    restart: unless-stopped
+  https:
+    image: caddy:2-alpine
+    ports: ["80:80", "443:443"]
+    environment:
+      DOMAIN: ${DOMAIN}
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - certificates:/data
+      - caddy_config:/config
+    depends_on: [app]
+    restart: unless-stopped
+volumes:
+  database:
+  uploads:
+  official:
+  certificates:
+  caddy_config:

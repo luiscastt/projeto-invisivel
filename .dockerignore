@@ -1,0 +1,13 @@
+.git
+.venv
+node_modules
+apps/web/node_modules
+apps/web/dist
+work
+.superpowers
+.env
+data/*.db*
+data/uploads
+__pycache__
+.pytest_cache
+test-results
