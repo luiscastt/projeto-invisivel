@@ -8,7 +8,7 @@ MVP de inteligência territorial e participação cidadã. Reúne navegação na
 
 O **INVISIVEL** é uma plataforma de inteligência territorial e participação cidadã que reúne dados públicos e relatos da comunidade para tornar problemas coletivos visíveis e acompanháveis. Pelo mapa, o usuário consulta indicadores, escolas, estabelecimentos de saúde, obras e convênios oficiais. Também pode relatar um problema, acrescentar evidências e acompanhar sua evolução em um dossiê revisado pela moderação. O sistema sugere relatos semelhantes para evitar duplicidades, registra a percepção da comunidade e permite comparar cenários hipotéticos de investimento. O diferencial é conectar **território, dados oficiais e participação**, distinguindo informação governamental, relato ainda não comprovado e simulação.
 
-Para o professor: selecione Serra, abra **Dados e serviços**, mostre um cadastro no mapa, ative a demonstração para abrir um dossiê e compare dois cenários no simulador. O sistema apoia a discussão de prioridades; não substitui uma ouvidoria oficial nem resolve problemas automaticamente. [Roteiro de três minutos](docs/apresentacao-mvp.md).
+Para o professor: selecione Serra, abra **Dados e serviços**, mostre um cadastro no mapa, abra um dossiê real de origem oficial e, se quiser, ative a demonstração e compare dois cenários no simulador. O sistema apoia a discussão de prioridades; não substitui uma ouvidoria oficial nem resolve problemas automaticamente. [Roteiro de três minutos](docs/apresentacao-mvp.md).
 
 ## Executar
 
@@ -56,7 +56,7 @@ Essas contas são criadas somente em desenvolvimento com autenticação local. E
 - Simulador com orçamento, custo hipotético, critérios alternativos, comparação, saldo e cenários persistidos por link.
 - Fontes, metodologia e privacidade públicas; interface responsiva, navegação móvel de até cinco destinos, teclado e PWA.
 
-A base comunitária **real inicia vazia**. Ausência de relatos não significa ausência de problemas. **Modo demonstração** mostra somente cenários fictícios, marcados no texto e separados dos resultados reais. Os indicadores oficiais continuam reais em ambos os modos.
+A base inicial já inclui **15.172 reclamações oficiais de 2025–2026**, agrupadas em **1.606 dossiês temáticos** da ouvidoria estadual do ES. **Serra: 3.418 registros / 124 dossiês; Vitória: 2.355 / 120.** Novos relatos comunitários são contados separadamente. [Origem, recorte e método de importação](docs/data-sources/reported-problems.md). Ausência de registros ou cobertura não significa ausência de problemas. **Modo demonstração** mostra somente cenários fictícios, marcados no texto e separados dos resultados reais. Os indicadores oficiais continuam reais em ambos os modos.
 
 ## Fontes oficiais e cobertura
 
@@ -113,7 +113,7 @@ A [documentação do Fala.BR](https://falabr.cgu.gov.br/help) é pública, mas i
 
 O [Painel Resolveu?](https://centralpaineis.cgu.gov.br/visualizar/resolveu) está acessível por link no INVISIVEL. A base nacional estatística pública em ZIP é uma fonte separada: a consulta Range identificou aproximadamente **416 MB**. O painel não é apresentado como API operacional anônima.
 
-Como alternativa funcional para o piloto, foi integrada a **ouvidoria estadual do ES** via CKAN, com paginação completa. Somente contagens agregadas de 2025 são publicadas; protocolos e textos individuais não saem no resultado. O município é o informado no registro de ouvidoria, não a localização de uma ocorrência de rua. Registros sem vínculo não são redistribuídos. **Essa base é estadual e não é apresentada como a base federal do Fala.BR.**
+Como alternativa funcional para o piloto, foi integrada a **ouvidoria estadual do ES** via CKAN, com paginação completa. A aba Dados e serviços mantém agregados de 2025. Além disso, as reclamações coletivas de 2025–2026 alimentam os dossiês iniciais, com metadados públicos e origem explícita; protocolos, dados pessoais e narrativas não são coletados pelo importador. O município é o informado no registro de ouvidoria, não a localização de uma ocorrência de rua. Registros sem vínculo não são redistribuídos. **Essa base é estadual e não é apresentada como a base federal do Fala.BR.**
 
 ### Educação sem baixar os microdados nacionais
 
@@ -135,7 +135,7 @@ Detalhes: [APIs verificadas](docs/data-sources/verified-apis.md) e [coletor](pip
 npm run sync:data
 ```
 
-O comando atualiza IBGE, CNES, Obrasgov, Transparência (quando a chave está configurada), escolas estaduais e ouvidoria estadual. O painel administrativo também pode iniciar a sincronização. A navegação lê snapshots locais, sem consultar uma API federal a cada página. Cada coletor preserva seu cache anterior quando falha e registra proveniência, referências, horários, hashes, registros e erros em seu manifesto.
+O comando atualiza IBGE, CNES, Obrasgov, Transparência (quando a chave está configurada), escolas estaduais, agregados de ouvidoria e a base inicial de reclamações oficiais. `npm run sync:problems` atualiza somente essa base inicial. O painel administrativo também pode iniciar a sincronização. A navegação lê snapshots locais, sem consultar uma API federal a cada página. Cada coletor preserva seu cache anterior quando falha e registra proveniência, referências, horários, hashes, registros e erros em seu manifesto.
 
 ```powershell
 npm run sync:services
@@ -282,3 +282,7 @@ Veja a [especificação original](docs/superpowers/specs/2026-11-20-invisivel.md
 ## Vercel Services e Supabase
 
 Dois serviços em `vercel.json`: FastAPI em `/api` e Vite nas demais rotas. PostgreSQL, Auth e fotos em Storage privado estão integrados ao Supabase e foram verificados com fluxo real. Consulte [integração Supabase e execução local](docs/supabase.md) e [configuração Vercel](docs/vercel.md). O deploy Vercel está validado no domínio público: API, dados oficiais, configuração Supabase e controles de origem/acesso responderam como esperado. A entrega de e-mails e os redirecionamentos de confirmação do Supabase ainda precisam de validação específica.
+
+## Registros oficiais e ausência de dados
+
+O painel conta dossiês acompanhados, registros oficiais e relatos internos separadamente. Dossiês municipais sem endereço não recebem um ponto inventado no mapa; encerramento administrativo de manifestação não comprova solução do problema. A base oficial inicial cobre a ouvidoria estadual do ES em 2025–2026, não todos os canais municipais/federais nem todo o Brasil. [Detalhes e limitações](docs/data-sources/reported-problems.md).

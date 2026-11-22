@@ -8,5 +8,7 @@ if os.environ.get("VERCEL") == "1" and os.environ.get("VERCEL_ENV") != "developm
     if os.environ.get("APP_ENV") != "production":
         raise RuntimeError("Vercel deployments require APP_ENV=production and production credentials.")
 
-sys.path.insert(0, str(Path(__file__).resolve().parent / "apps" / "api"))
+root = Path(__file__).resolve().parent
+sys.path.insert(0, str(root))
+sys.path.insert(0, str(root / "apps" / "api"))
 from app.main import app  # noqa: E402, F401

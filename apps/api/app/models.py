@@ -30,16 +30,33 @@ class Issue(Base):
     category: Mapped[str] = mapped_column(String(30), index=True)
     municipality_code: Mapped[str] = mapped_column(String(7), index=True)
     neighborhood: Mapped[str] = mapped_column(String(160), default="")
-    latitude: Mapped[float] = mapped_column(Float)
-    longitude: Mapped[float] = mapped_column(Float)
+    latitude: Mapped[float | None] = mapped_column(Float, nullable=True)
+    longitude: Mapped[float | None] = mapped_column(Float, nullable=True)
+    origin: Mapped[str] = mapped_column(String(24), default="community", server_default="community")
     verification_status: Mapped[str] = mapped_column(String(40), default="community_report")
     operational_status: Mapped[str] = mapped_column(String(40), default="reported", index=True)
-    first_reported_at: Mapped[str] = mapped_column(String(40), default=now)
+    first_reported_at: Mapped[str | None] = mapped_column(String(40).evaluates_none(), default=now, nullable=True)
     last_activity_at: Mapped[str] = mapped_column(String(40), default=now)
     is_demo: Mapped[bool] = mapped_column(Boolean, default=False, index=True)
     version: Mapped[int] = mapped_column(Integer, default=1)
     sources: Mapped[list] = mapped_column(JSON, default=list)
     merged_into: Mapped[str | None] = mapped_column(ForeignKey("issues.id"), nullable=True)
+
+
+class OfficialRecord(Base):
+    __tablename__ = "official_records"
+    id: Mapped[str] = mapped_column(String(96), primary_key=True)
+    issue_id: Mapped[str] = mapped_column(ForeignKey("issues.id"), index=True)
+    source_key: Mapped[str] = mapped_column(String(64), index=True)
+    year: Mapped[int] = mapped_column(Integer)
+    municipality_code: Mapped[str] = mapped_column(String(7), index=True)
+    subject: Mapped[str] = mapped_column(String(200))
+    agency: Mapped[str] = mapped_column(String(160))
+    manifestation_type: Mapped[str] = mapped_column(String(40))
+    processing_status: Mapped[str] = mapped_column(String(80))
+    recorded_at: Mapped[str | None] = mapped_column(String(40), nullable=True)
+    source_url: Mapped[str] = mapped_column(Text)
+    fetched_at: Mapped[str] = mapped_column(String(40))
 
 
 class Report(Base):

@@ -56,6 +56,11 @@ function Result({ s }: { s: Simulation }) {
         <dt>Saldo</dt>
         <dd>{money(s.balance)}</dd>
       </dl>
+      {!!s.excluded_official_dossiers && (
+        <p className="footnote">
+          {s.excluded_official_dossiers} dossiês oficiais de escala municipal foram excluídos do cálculo de custo por intervenção física; não identificam intervenções pontuais.
+        </p>
+      )}
       {s.issues.length > 0 && (
         <details>
           <summary>Ver problemas selecionados</summary>

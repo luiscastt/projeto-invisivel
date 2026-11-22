@@ -1781,3 +1781,5 @@ dialog::backdrop {
   display: grid;
   gap: 7px;
 }
+
+.map-unlocated { position: absolute; left: 12px; bottom: 38px; z-index: 2; max-width: calc(100% - 24px); padding: 5px 8px; border-radius: 5px; background: var(--paper, #fff); color: #324b40; font-size: 11px; }

@@ -115,17 +115,20 @@ export default function Dashboard() {
         "&sort=recent&page=1&page_size=50",
     );
   const counts = summary.data?.counts;
+  const officialSources = summary.data?.coverage?.official_problem_sources ?? (
+    city.code.startsWith("32") ? ["Ouvidoria estadual do Espírito Santo · 2025–2026"] : []
+  );
   const cards = [
     {
-      name: "Problemas mapeados",
+      name: "Dossiês acompanhados",
       v: counts?.total,
       icon: MapPin,
       tone: "forest",
     },
-    { name: "Em aberto", v: counts?.unresolved, icon: ScanLine, tone: "amber" },
-    { name: "Resolvidos", v: counts?.resolved, icon: CheckCheck, tone: "blue" },
+    { name: "Registros oficiais", v: counts?.official_records, icon: ScanLine, tone: "amber" },
+    { name: "Resolução verificada", v: counts?.resolved, icon: CheckCheck, tone: "blue" },
     {
-      name: "Relatos associados",
+      name: "Relatos na plataforma",
       v: counts?.reports,
       icon: MessagesSquare,
       tone: "violet",
@@ -167,6 +170,19 @@ export default function Dashboard() {
           </article>
         ))}
       </div>
+      {counts && (
+        <p className="footnote">
+          Dossiês de fonte oficial: {counts.official_issues == null ? "—" : number(counts.official_issues)} · Comunitários: {counts.community_issues == null ? "—" : number(counts.community_issues)} · Situação não avaliada: {counts.not_assessed == null ? "—" : number(counts.not_assessed)}.
+          {" "}Dossiês oficiais são agrupamentos temáticos, não uma contagem de ocorrências físicas únicas. O registro oficial não comprova o problema nem sua solução.
+        </p>
+      )}
+      {!demo && (
+        <p className="footnote">
+          Base inicial de manifestações oficiais: {officialSources.length ? officialSources.join("; ") : "sem cobertura para este município"}.
+          {" "}A cobertura não inclui todas as manifestações nem todos os canais municipais e federais.
+          {!officialSources.length && " A base inicial de manifestações oficiais não cobre este município; um resultado vazio não indica ausência de problemas."}
+        </p>
+      )}
       <div className="dashboard-grid">
         <section className="panel map-panel">
           <div className="panel-title">
@@ -192,7 +208,7 @@ export default function Dashboard() {
               <i className="legend-line" /> Limite municipal
             </span>
             <span>
-              <i className="legend-dot" /> Problema publicado
+              <i className="legend-dot" /> Dossiê com localização pontual
             </span>
           </div>
         </section>
@@ -257,7 +273,7 @@ export default function Dashboard() {
             <div className="eyebrow dark">
               <span className="line" /> ACOMPANHAMENTO
             </div>
-            <h2>Problemas recentes</h2>
+            <h2>Dossiês recentes</h2>
           </div>
           <Link className="text-link" to="/problemas">
             Ver todos <ArrowRight size={15} />

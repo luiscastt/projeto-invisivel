@@ -1,12 +1,12 @@
 # Apresentação breve do INVISIVEL
 
-O **INVISIVEL** é uma plataforma de inteligência territorial e participação cidadã que reúne dados públicos e relatos da comunidade para tornar problemas coletivos visíveis e acompanháveis. Pelo mapa, o usuário consulta indicadores, escolas, estabelecimentos de saúde, obras e convênios oficiais. Também pode relatar um problema, acrescentar evidências e acompanhar sua evolução em um dossiê revisado pela moderação. O sistema sugere relatos semelhantes para evitar duplicidades, registra a percepção da comunidade e permite comparar cenários hipotéticos de investimento. O diferencial é conectar **território, dados oficiais e participação**, distinguindo informação governamental, relato ainda não comprovado e simulação.
+O **INVISIVEL** é uma plataforma de inteligência territorial e participação cidadã que reúne dados públicos e relatos da comunidade para tornar problemas coletivos visíveis e acompanháveis. Pelo mapa, o usuário consulta indicadores, escolas, estabelecimentos de saúde, obras e convênios oficiais. O sistema já começa com reclamações oficiais existentes, agrupadas por tema e com a fonte preservada. Em Serra, o recorte de 2025–2026 reúne 3.418 reclamações em 124 dossiês, sem inventar endereço ou afirmar resolução. Também pode relatar um problema, acrescentar evidências e acompanhar sua evolução em um dossiê revisado pela moderação. O sistema sugere relatos semelhantes para evitar duplicidades, registra a percepção da comunidade e permite comparar cenários hipotéticos de investimento. O diferencial é conectar **território, dados oficiais e participação**, distinguindo informação governamental, relato ainda não comprovado e simulação.
 
 ## Demonstração em três minutos
 
 1. Selecionar Serra e conferir população, fonte e ano.
 2. Abrir Dados e serviços e mostrar saúde, escolas, obras, convênios, SINISA e ouvidoria estadual.
-3. Ativar a demonstração e abrir um dossiê fictício; explicar relato, evidência, revisão e histórico.
+3. Abrir Problemas e um dossiê de origem oficial; mostrar o órgão, os registros e explicar que encerramento da manifestação não comprova solução. A demonstração continua disponível separadamente para testar participação e moderação.
 4. Mostrar votação e esclarecer que ela não comprova resolução.
 5. Comparar dois cenários de investimento e destacar o caráter hipotético.
 

@@ -27,6 +27,7 @@ import {
   externalUrl,
   localDate,
   validCoordinates,
+  hasIssuePoint,
   type Category,
   type Duplicate,
   type IssueDetail,
@@ -88,8 +89,8 @@ function Wizard({ issue }: { issue?: IssueDetail }) {
       : app.city,
     demo = issue?.is_demo ?? app.demo;
   const [step, setStep] = useState(0),
-    [lat, setLat] = useState(issue?.latitude.toString() || ""),
-    [lng, setLng] = useState(issue?.longitude.toString() || ""),
+    [lat, setLat] = useState(issue && hasIssuePoint(issue) ? issue.latitude.toString() : ""),
+    [lng, setLng] = useState(issue && hasIssuePoint(issue) ? issue.longitude.toString() : ""),
     [neighborhood, setNeighborhood] = useState(issue?.neighborhood || ""),
     [title, setTitle] = useState(issue?.title || ""),
     [description, setDescription] = useState(""),
@@ -581,7 +582,7 @@ function Wizard({ issue }: { issue?: IssueDetail }) {
                     <span>
                       <b>{d.issue.title}</b>
                       <small>
-                        {d.distance_meters != null
+                        {hasIssuePoint(d.issue) && d.distance_meters != null
                           ? Math.round(d.distance_meters) + " m · "
                           : ""}
                         {label(d.interpretation)} · {Math.round(d.score * 100)}%

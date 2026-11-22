@@ -128,6 +128,8 @@ def merge(issue_id: str, body: Merge, admin=Depends(require_admin), db: Session 
     # Stable lock ordering avoids deadlock in PostgreSQL.
     ordered = {id_: get_issue(db, id_, lock=True) for id_ in sorted([issue_id, body.target_id])}
     source, target = ordered[issue_id], ordered[body.target_id]
+    if source.origin == "official" or target.origin == "official":
+        raise HTTPException(422, "Dossiês temáticos oficiais agrupam manifestações e não são ocorrências físicas únicas para unificação.")
     if source.merged_into or target.merged_into or source.municipality_code != target.municipality_code or source.is_demo != target.is_demo:
         raise HTTPException(422, "Problemas incompatíveis para unificação.")
     for r in db.scalars(select(Report).where(Report.issue_id == source.id)):

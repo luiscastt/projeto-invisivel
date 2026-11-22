@@ -29,3 +29,9 @@ API prefix `/api/v1`, JSON, cookies same-origin, erros `{detail: string}`. Lista
 - GET `/issues/{id}/reports|sources|updates` -> arrays corresponding detail.
 
 Map uses MapLibre raster tiles OpenStreetMap (cartographic base, not government statistics), official GeoJSON outline and approved issue points. Default real data empty of community reports. Explicit demo toggle shows only seeded illustrative issues, visually flagged. Sources/indicators real in both modes. Default pilot Serra 3205002; Vitória 3205309. App remains useful with no data: clear explanatory empty states and report action. Unavailable sectors explicitly say “Dado não disponível”.
+
+## Base inicial oficial
+
+GET /api/v1/issues aceita origin=official ou community. Os itens incluem origin, official_records_count e location_precision. Latitude, longitude e first_reported_at podem ser null quando a fonte não fornece informação válida. O detalhe inclui official_records_total e até 20 metadados de registros oficiais, com origem verificável.
+
+O resumo municipal separa official_records, official_issues, community_issues, reports e not_assessed; coverage.official_problem_sources informa a cobertura inicial. source_removed é arquivamento da fonte, excluído dos totais ativos, sem indicar resolução. Encerrada no registro da fonte não implica verified_resolved. Dossiês temáticos oficiais não entram em fusão de ocorrências físicas e, sem localização, ficam fora da alocação por custo unitário físico no simulador (excluded_official_dossiers).

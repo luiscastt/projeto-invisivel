@@ -16,7 +16,8 @@
     "test:e2e": "node scripts/e2e.mjs",
     "cleanup": "node scripts/python.mjs -m app.maintenance",
     "start:supabase": "node scripts/supabase.mjs",
-    "vercel:env": "node scripts/vercel-env.mjs"
+    "vercel:env": "node scripts/vercel-env.mjs",
+    "sync:problems": "node scripts/python.mjs -m pipelines.reported_problems"
   },
   "engines": {
     "node": ">=22.12"

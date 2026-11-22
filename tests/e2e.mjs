@@ -10,21 +10,30 @@ async function signIn(admin=false){
  await visit('/entrar');await page.getByRole('button',{name:admin?'Moderação':'Cidadão',exact:true}).click();await page.getByRole('button',{name:'Entrar',exact:true}).click();await page.waitForURL(base+'/');
 }
 try{
+ const initialPublic=await(await context.request.get(base+'/api/v1/issues')).json();
+ const officialBaseline=initialPublic.total;
+ assert(officialBaseline>0,'Real official complaints must populate the initial database');
  await visit('/');await page.getByText('520.653 pessoas',{exact:true}).first().waitFor();
  await page.locator('.map-canvas canvas').waitFor();
  assert((await page.locator('.map-canvas').boundingBox()).height>250,'MapLibre canvas must have a visible container');
  console.log('PASS dashboard + official indicators + map dimensions');
+ const officialPage=await(await context.request.get(base+'/api/v1/issues?municipality=3205002&origin=official&page_size=1')).json();
+ assert(officialPage.total>0);const official=officialPage.items[0];
+ assert.equal(official.latitude,null);assert.equal(official.longitude,null);assert(official.official_records_count>0);
+ await visit('/problemas/'+official.id);await page.getByRole('heading',{name:official.title,exact:true}).waitFor();
+ await page.getByText('Município informado pela fonte; endereço não disponível. Encerramento da manifestação não comprova solução.',{exact:true}).waitFor();
+ console.log('PASS real initial official dossiers + private-free metadata + no fabricated coordinates');
  await signIn(); await visit('/relatar');
  await page.getByLabel('Latitude',{exact:true}).fill('-20.2044');await page.getByLabel('Longitude',{exact:true}).fill('-40.2676');await page.getByRole('button',{name:'Continuar',exact:true}).click();
  const title='Verificação automatizada de iluminação '+Date.now();
  await page.getByLabel('Título',{exact:true}).fill(title);await page.getByLabel('Descrição',{exact:true}).fill('Relato de teste automatizado, isolado da base real: iluminação apagada na travessia próxima à praça.');await page.getByRole('button',{name:'Continuar',exact:true}).click();
  await page.getByRole('button',{name:'Continuar',exact:true}).click();await page.getByRole('button',{name:'Continuar',exact:true}).click();await page.getByRole('button',{name:'Enviar para moderação',exact:true}).click();await page.getByRole('heading',{name:'Relato recebido'}).waitFor();
- const privateList=await (await context.request.get(base+'/api/v1/issues')).json();assert.equal(privateList.total,0);
+ const privateList=await (await context.request.get(base+'/api/v1/issues')).json();assert.equal(privateList.total,officialBaseline);
  console.log('PASS authenticated report wizard + pending privacy');
  await visit('/perfil');await page.getByRole('button',{name:'Sair',exact:true}).click();await signIn(true);await visit('/admin');
  await page.getByRole('heading',{name:title}).waitFor();await page.getByLabel('Justificativa (pública se o relato for aprovado)',{exact:true}).fill('Publicação revisada para teste automatizado em banco isolado.');await page.getByRole('button',{name:'Registrar decisão',exact:true}).click();
  await page.getByText('Fila de moderação em dia',{exact:true}).waitFor();
- const list=await(await context.request.get(base+'/api/v1/issues')).json();assert.equal(list.total,1);const issue=list.items[0];
+ const list=await(await context.request.get(base+'/api/v1/issues')).json();assert.equal(list.total,officialBaseline+1);const matched=await(await context.request.get(base+'/api/v1/issues?search='+encodeURIComponent(title))).json();const issue=matched.items.find(i=>i.title===title);assert(issue);
  await visit('/problemas/'+issue.id);await page.getByRole('heading',{name:title}).waitFor();
  await page.getByRole('button',{name:/^Não resolvido/}).click();
  await page.getByRole('button',{name:/^Não resolvido/,pressed:true}).waitFor();

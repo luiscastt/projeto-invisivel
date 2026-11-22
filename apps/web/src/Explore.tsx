@@ -14,6 +14,7 @@ import { categories, label, type IssuePage, type Neighborhood } from "./models";
 import { Busy, Empty, Err, IssueRow, PageTitle, ReportButton } from "./ui";
 const TerritoryMap = lazy(() => import("./TerritoryMap"));
 const operational = [
+  "not_assessed",
   "reported",
   "corroborated",
   "in_progress",
@@ -49,6 +50,7 @@ export default function Explore({ mapView = false }: { mapView?: boolean }) {
         demo,
         search: get("busca"),
         category: get("categoria"),
+        origin: get("origem"),
         operational_status: get("situacao"),
         verification_status: get("verificacao"),
         neighborhood: get("bairro"),
@@ -60,6 +62,7 @@ export default function Explore({ mapView = false }: { mapView?: boolean }) {
   const filtered = [
     "busca",
     "categoria",
+    "origem",
     "situacao",
     "bairro",
     "verificacao",
@@ -106,6 +109,14 @@ export default function Explore({ mapView = false }: { mapView?: boolean }) {
             </select>
           </label>
           <label>
+            Origem
+            <select value={get("origem")} onChange={(e) => change("origem", e.target.value)}>
+              <option value="">Todas as origens</option>
+              <option value="official">Fonte oficial</option>
+              <option value="community">Comunitária</option>
+            </select>
+          </label>
+          <label>
             Situação
             <select
               value={get("situacao")}
@@ -149,6 +160,7 @@ export default function Explore({ mapView = false }: { mapView?: boolean }) {
               >
                 <option value="">Todas as verificações</option>
                 <option value="community_report">Relato comunitário</option>
+                <option value="official_registered">Registro em fonte oficial</option>
               </select>
             </label>
             <label>
@@ -182,8 +194,8 @@ export default function Explore({ mapView = false }: { mapView?: boolean }) {
                 ? issues.data.total +
                   " " +
                   (issues.data.total === 1
-                    ? "problema encontrado"
-                    : "problemas encontrados")
+                    ? "dossiê encontrado"
+                    : "dossiês encontrados")
                 : "Registros territoriais"}
             </h2>
           </div>
@@ -204,6 +216,10 @@ export default function Explore({ mapView = false }: { mapView?: boolean }) {
             </Link>
           </div>
         </div>
+        <p className="footnote">
+          Dossiês oficiais agrupam manifestações por município, assunto, órgão e ano. Registros oficiais e relatos na plataforma são contagens distintas; os agrupamentos não representam ocorrências físicas únicas.
+          {mapView && " Dossiês sem endereço permanecem na lista, sem marcador no mapa."}
+        </p>
         {mapView && (
           <Suspense fallback={<Busy />}>
             <TerritoryMap city={city} issues={issues.data?.items} />

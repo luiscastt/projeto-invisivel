@@ -11,7 +11,7 @@ import { Crosshair, Layers3, MapPin } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { api, ApiError } from "./api";
-import { type City, type Issue } from "./models";
+import { hasIssuePoint, type City, type Issue } from "./models";
 import "maplibre-gl/dist/maplibre-gl.css";
 type Shape = Feature | FeatureCollection;
 type Point = [number, number];
@@ -74,7 +74,8 @@ function applyFit(
   issues: Issue[],
   picked?: Point | null,
 ) {
-  if (picked && issues.length === 1) {
+  const located = issues.filter(hasIssuePoint);
+  if (picked && located.length === 1) {
     map.jumpTo({ center: picked, zoom: 14 });
     return;
   }
@@ -82,9 +83,9 @@ function applyFit(
   if (b && b[0][0] !== b[1][0])
     map.fitBounds(b, { padding: 28, duration: 0, maxZoom: 15 });
   else if (city.center) map.jumpTo({ center: city.center, zoom: 11 });
-  else if (issues.length || picked)
+  else if (located.length || picked)
     map.jumpTo({
-      center: picked || [issues[0].longitude, issues[0].latitude],
+      center: picked || [located[0].longitude, located[0].latitude],
       zoom: 12,
     });
   else map.jumpTo({ center: [-52, -14], zoom: 2.7 });
@@ -95,6 +96,8 @@ export default function TerritoryMap({
   picked,
   onPick,
 }: Props) {
+  const pointIssues = useMemo(() => issues.filter(hasIssuePoint), [issues]);
+  const unlocatedCount = issues.length - pointIssues.length;
   const navigate = useNavigate(),
     element = useRef<HTMLDivElement>(null),
     mapRef = useRef<MapInstance | null>(null);
@@ -347,10 +350,7 @@ export default function TerritoryMap({
     if (loaded && m)
       (m.getSource("issues") as GeoJSONSource).setData({
         type: "FeatureCollection",
-        features: issues
-          .filter(
-            (i) => Number.isFinite(i.longitude) && Number.isFinite(i.latitude),
-          )
+        features: pointIssues
           .map((i) =>
             point([i.longitude, i.latitude], {
               id: i.id,
@@ -358,7 +358,7 @@ export default function TerritoryMap({
             }),
           ),
       });
-  }, [loaded, issues]);
+  }, [loaded, pointIssues]);
   useEffect(() => {
     const m = mapRef.current;
     if (loaded && m)
@@ -384,7 +384,7 @@ export default function TerritoryMap({
     const polygons = shapes(geometry.data).flatMap((f) => rings(f.geometry));
     const b =
       bounds(polygons.flat()) ||
-      bounds(issues.map((i) => [i.longitude, i.latitude]));
+      bounds(pointIssues.map((i) => [i.longitude, i.latitude]));
     if (!b) return null;
     const sx = Math.max(0.015, b[1][0] - b[0][0]),
       sy = Math.max(0.015, b[1][1] - b[0][1]),
@@ -404,7 +404,7 @@ export default function TerritoryMap({
         (r) => "M" + r.map((p) => xy(p).join(",")).join("L") + "Z",
       ),
     };
-  }, [geometry.data, areasGeometry.data, issues, loaded, failed]);
+  }, [geometry.data, areasGeometry.data, pointIssues, loaded, failed]);
   return (
     <div className={"territory-map" + (onPick ? " pick-map" : "")}>
       <div
@@ -425,7 +425,7 @@ export default function TerritoryMap({
                   <path className="fallback-area" key={i} d={d} />
                 ))}
               {showIssues &&
-                issues.map((i) => {
+                pointIssues.map((i) => {
                   const [x, y] = projected.xy([i.longitude, i.latitude]);
                   return (
                     <Link
@@ -470,7 +470,7 @@ export default function TerritoryMap({
               checked={showIssues}
               onChange={(e) => setShowIssues(e.target.checked)}
             />
-            Problemas publicados
+            Dossiês com localização pontual
           </label>
           <label className="check-row">
             <input
@@ -504,6 +504,9 @@ export default function TerritoryMap({
         >
           <Crosshair size={16} />
         </button>
+      )}
+      {!!unlocatedCount && (
+        <small className="map-unlocated">{unlocatedCount} dossiê(s) com localização apenas municipal; consulte a lista.</small>
       )}
       {(failed || tilesFailed || geometry.isError) && (
         <small className="map-warning">

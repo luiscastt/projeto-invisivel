@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Depends, Request, HTTPException
-from sqlalchemy import select
+from sqlalchemy import select, func, or_
 from sqlalchemy.orm import Session
 from .db import get_db, uid, now
 from .models import Issue, Simulation
@@ -20,10 +20,11 @@ def interventions():
 @router.post("/simulations", status_code=201)
 def simulate(body: SimulationInput, request: Request, db: Session = Depends(get_db, scope="function")):
     municipality(request, body.municipality_code)
-    candidates = [issue_json(db, i, request) for i in db.scalars(select(Issue).where(Issue.municipality_code == body.municipality_code, Issue.category == body.category, Issue.is_demo == body.demo, Issue.merged_into.is_(None), Issue.operational_status != "verified_resolved"))]
+    candidates = [issue_json(db, i, request) for i in db.scalars(select(Issue).where(Issue.municipality_code == body.municipality_code, Issue.category == body.category, Issue.is_demo == body.demo, Issue.merged_into.is_(None), Issue.operational_status != "source_removed", Issue.operational_status != "verified_resolved", Issue.operational_status != "not_assessed", Issue.latitude.is_not(None), Issue.longitude.is_not(None)))]
+    excluded = db.scalar(select(func.count()).select_from(Issue).where(Issue.municipality_code == body.municipality_code, Issue.category == body.category, Issue.is_demo == body.demo, Issue.merged_into.is_(None), Issue.operational_status != "source_removed", Issue.origin == "official", or_(Issue.operational_status == "not_assessed", Issue.latitude.is_(None), Issue.longitude.is_(None)))) or 0
     allocation = allocate(candidates, body.budget, body.unit_cost, body.strategy)
     id_ = uid()
-    result = {"id": id_, **body.model_dump(mode="json"), "budget": float(body.budget), "unit_cost": float(body.unit_cost), **allocation, "issues": [next(i for i in candidates if i["id"] == id_) for id_ in allocation["issue_ids"]], "created_at": now(), "disclaimer": DISCLAIMER, "assumptions": ["Custo unitário igual e hipotético para cada problema; uma intervenção por registro.", "Capacidade = parte inteira do orçamento dividido pelo custo unitário; valores calculados em centavos.", "A quantidade selecionada é limitada aos problemas publicados nesta categoria e município.", "Estratégia prioridade: sem dados verificados suficientes para um índice, usa ordem estável por identificador; não representa prioridade oficial.", "Relatos contam contribuições revisadas, não pessoas afetadas nem comprovação de verdade.", "Não são estimadas melhorias causais em indicadores sociais, nem população beneficiada."]}
+    result = {"id": id_, "excluded_official_dossiers": excluded, **body.model_dump(mode="json"), "budget": float(body.budget), "unit_cost": float(body.unit_cost), **allocation, "issues": [next(i for i in candidates if i["id"] == id_) for id_ in allocation["issue_ids"]], "created_at": now(), "disclaimer": DISCLAIMER, "assumptions": ["Custo unitário igual e hipotético para cada problema; uma intervenção por registro.", "Capacidade = parte inteira do orçamento dividido pelo custo unitário; valores calculados em centavos.", "A quantidade selecionada é limitada aos problemas publicados nesta categoria e município.", "Estratégia prioridade: sem dados verificados suficientes para um índice, usa ordem estável por identificador; não representa prioridade oficial.", "Relatos contam contribuições revisadas, não pessoas afetadas nem comprovação de verdade.", "Não são estimadas melhorias causais em indicadores sociais, nem população beneficiada."]}
     db.add(Simulation(id=id_, result=result))
     return result
 

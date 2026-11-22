@@ -16,6 +16,7 @@ import {
   categories,
   date,
   label,
+  hasIssuePoint,
   type Indicator,
   type IssueDetail,
   type Vote,
@@ -79,6 +80,7 @@ function Dossier({ item: i }: { item: IssueDetail }) {
       <div className="tags">
         <Tag tone="green">{categories[i.category]}</Tag>
         <Tag>{label(i.operational_status)}</Tag>
+        <Tag>{i.origin === "official" ? "Fonte oficial · Dossiê temático" : "Origem comunitária"}</Tag>
         {i.is_demo && <Tag tone="amber">Demonstração</Tag>}
       </div>
       <PageTitle
@@ -93,15 +95,20 @@ function Dossier({ item: i }: { item: IssueDetail }) {
         </button>
       </PageTitle>
       {linkCopied && <p role="status">{linkCopied}</p>}
+      {i.operational_status === "source_removed" && (
+        <p className="notice">
+          Os registros que originaram este dossiê não constam no recorte atual da fonte importada. O dossiê foi arquivado por atualização da fonte; isso não comprova que o problema foi resolvido.
+        </p>
+      )}
       <div className="content-grid">
         <div className="stack">
           <section className="panel prose">
-            <h2>Resumo do problema</h2>
+            <h2>{i.origin === "official" ? "Resumo do dossiê temático" : "Resumo do problema"}</h2>
             <p className="pre">{i.summary}</p>
             <dl className="details">
               <dt>Identificador</dt>
               <dd>{i.id}</dd>
-              <dt>Primeiro relato</dt>
+              <dt>Primeiro registro</dt>
               <dd>{date(i.first_reported_at)}</dd>
               <dt>Última atualização</dt>
               <dd>{date(i.last_activity_at)}</dd>
@@ -119,9 +126,32 @@ function Dossier({ item: i }: { item: IssueDetail }) {
               </Link>
             )}
           </section>
+          {i.origin === "official" && (
+            <section className="panel prose">
+              <h2>Registros oficiais <small>{i.official_records_total ?? i.official_records_count ?? "—"}</small></h2>
+              <p>Manifestações agrupadas por município, assunto, órgão e ano; não representam uma contagem de ocorrências físicas únicas. O registro na fonte oficial comprova o recebimento da manifestação, sem confirmar seu conteúdo.</p>
+              <p>Município informado pela fonte; endereço não disponível. Encerramento da manifestação não comprova solução.</p>
+              {(i.official_records || []).map((record) => (
+                <article className="record" key={record.id}>
+                  <strong>{record.subject}</strong>
+                  <dl className="details">
+                    <dt>Órgão</dt><dd>{record.agency || "Não informado"}</dd>
+                    <dt>Ano</dt><dd>{record.year ?? "Não informado"}</dd>
+                    <dt>Tipo de manifestação</dt><dd>{record.manifestation_type || "Não informado"}</dd>
+                    <dt>Situação na fonte</dt><dd>{record.processing_status || "Não informada"}</dd>
+                    <dt>Registro na fonte</dt><dd>{date(record.recorded_at)}</dd>
+                  </dl>
+                  <External url={record.source_url}>Consultar fonte original</External>
+                </article>
+              ))}
+              {(i.official_records_total ?? 0) > (i.official_records?.length ?? 0) && (
+                <p className="footnote">Exibindo {i.official_records?.length ?? 0} de {i.official_records_total} registros. Consulte a fonte original para o conjunto completo.</p>
+              )}
+            </section>
+          )}
           <section className="panel prose">
             <h2>
-              Relatos associados <small>{i.reports.length}</small>
+              Relatos na plataforma <small>{i.reports.length}</small>
             </h2>
             {i.reports.map((r) => (
               <article className="record" key={r.id}>
@@ -255,11 +285,11 @@ function Dossier({ item: i }: { item: IssueDetail }) {
                   center: null,
                 }}
                 issues={[i]}
-                picked={[i.longitude, i.latitude]}
+                picked={hasIssuePoint(i) ? [i.longitude, i.latitude] : null}
               />
             </Suspense>
             <p className="footnote">
-              {i.latitude}, {i.longitude}
+              {hasIssuePoint(i) ? `${i.latitude}, ${i.longitude}` : "Localização apenas municipal; endereço não disponível na fonte."}
             </p>
           </section>
         </aside>

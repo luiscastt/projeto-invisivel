@@ -7,6 +7,9 @@ export const categories = {
   environment: "Meio ambiente",
 } as const;
 export const statuses = {
+  not_assessed: "Não avaliado",
+  source_removed: "Arquivado por atualização da fonte",
+  official_registered: "Registro em fonte oficial",
   reported: "Relatado",
   corroborated: "Corroborado",
   in_progress: "Em andamento",
@@ -90,9 +93,13 @@ export type Summary = {
     resolved: number;
     reports: number;
     evidence: number;
+    official_records?: number;
+    official_issues?: number;
+    community_issues?: number;
+    not_assessed?: number;
   };
   indicators: Indicator[];
-  coverage: { neighborhoods: number; boundaries_available: boolean };
+  coverage: { neighborhoods: number; boundaries_available: boolean; official_problem_sources?: string[] };
   assessment: { score: number | null; reason: string };
 };
 export type Evidence = {
@@ -124,11 +131,14 @@ export type Issue = {
   municipality_name: string;
   state_abbreviation: string;
   neighborhood: string;
-  latitude: number;
-  longitude: number;
+  latitude: number | null;
+  longitude: number | null;
+  origin?: "community" | "official";
+  location_precision?: "municipality" | "point";
+  official_records_count?: number;
   verification_status: string;
   operational_status: string;
-  first_reported_at: string;
+  first_reported_at: string | null;
   last_activity_at: string;
   is_demo: boolean;
   reports_count: number;
@@ -137,7 +147,20 @@ export type Issue = {
   priority: { score: number | null; reason: string };
   version: number;
 };
+export type OfficialRecord = {
+  id: string;
+  subject: string;
+  agency: string;
+  year: string | number | null;
+  manifestation_type: string;
+  processing_status: string;
+  recorded_at: string | null;
+  source_url: string;
+  municipality_code: string;
+};
 export type IssueDetail = Issue & {
+  official_records?: OfficialRecord[];
+  official_records_total?: number;
   reports: {
     id: string;
     description: string;
@@ -223,6 +246,7 @@ export type Simulation = {
   strategy: string;
   capacity: number;
   selected_count: number;
+  excluded_official_dossiers?: number;
   spent: number;
   balance: number;
   issue_ids: string[];
@@ -245,6 +269,11 @@ export type DataSource = {
   records: number | null;
   notes: string | null;
 };
+export function hasIssuePoint<T extends Pick<Issue, "latitude" | "longitude" | "location_precision">>(issue: T): issue is T & {latitude: number; longitude: number} {
+  return issue.location_precision !== "municipality" &&
+    typeof issue.latitude === "number" && Number.isFinite(issue.latitude) &&
+    typeof issue.longitude === "number" && Number.isFinite(issue.longitude);
+}
 export const number = (value: number) =>
   new Intl.NumberFormat("pt-BR", { maximumFractionDigits: 2 }).format(value);
 export const money = (value: number) =>

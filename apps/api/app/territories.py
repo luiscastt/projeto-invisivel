@@ -8,7 +8,7 @@ from sqlalchemy.orm import Session
 from shapely.geometry import shape, Point
 from shapely.ops import unary_union
 from .db import get_db
-from .models import Issue, Report, Evidence
+from .models import OfficialRecord, Issue, Report, Evidence
 
 router = APIRouter(tags=["Territórios e dados oficiais"])
 
@@ -131,11 +131,14 @@ def get_indicators(code: str, request: Request):
 @router.get("/territories/{code}/summary")
 def summary(code: str, request: Request, demo: bool = False, db: Session = Depends(get_db, scope="function")):
     m = municipality(request, code)
-    filters = [Issue.municipality_code == code, Issue.is_demo == demo, Issue.merged_into.is_(None)]
+    filters = [Issue.municipality_code == code, Issue.is_demo == demo, Issue.merged_into.is_(None), Issue.operational_status != "source_removed"]
     count = db.scalar(select(func.count()).select_from(Issue).where(*filters)) or 0
     resolved = db.scalar(select(func.count()).select_from(Issue).where(*filters, Issue.operational_status == "verified_resolved")) or 0
+    unknown = db.scalar(select(func.count()).select_from(Issue).where(*filters, Issue.operational_status == "not_assessed")) or 0
+    official = db.scalar(select(func.count()).select_from(Issue).where(*filters, Issue.origin == "official")) or 0
     issue_ids = select(Issue.id).where(*filters)
-    return {"municipality": m, "counts": {"total": count, "unresolved": count - resolved, "resolved": resolved, "reports": db.scalar(select(func.count()).select_from(Report).where(Report.issue_id.in_(issue_ids), Report.moderation_status == "approved")) or 0, "evidence": db.scalar(select(func.count()).select_from(Evidence).where(Evidence.issue_id.in_(issue_ids), Evidence.approved == True)) or 0}, "indicators": indicators(request, code), "coverage": {"neighborhoods": len(neighborhoods(request, code)), "boundaries_available": geometry(request, code) is not None}, "assessment": {"score": None, "reason": "Sem avaliação composta: indicadores de períodos e metodologias diferentes não são somados. Ausência de relatos não significa ausência de problemas."}}
+    official_records = db.scalar(select(func.count()).select_from(OfficialRecord).where(OfficialRecord.issue_id.in_(issue_ids))) or 0
+    return {"municipality": m, "counts": {"total": count, "unresolved": count - resolved - unknown, "not_assessed": unknown, "official_issues": official, "community_issues": count - official, "official_records": official_records, "resolved": resolved, "reports": db.scalar(select(func.count()).select_from(Report).where(Report.issue_id.in_(issue_ids), Report.moderation_status == "approved")) or 0, "evidence": db.scalar(select(func.count()).select_from(Evidence).where(Evidence.issue_id.in_(issue_ids), Evidence.approved == True)) or 0}, "indicators": indicators(request, code), "coverage": {"official_problem_sources": ["Ouvidoria estadual do ES · 2025–2026"] if code.startswith("32") and (request.app.state.settings.official_dir / "reported-problems-es.json.gz").is_file() else [], "neighborhoods": len(neighborhoods(request, code)), "boundaries_available": geometry(request, code) is not None}, "assessment": {"score": None, "reason": "Sem avaliação composta: indicadores de períodos e metodologias diferentes não são somados. Ausência de relatos não significa ausência de problemas."}}
 
 
 @router.get("/sources")

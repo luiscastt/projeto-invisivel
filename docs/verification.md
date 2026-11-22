@@ -49,3 +49,11 @@ PostgreSQL/PostGIS, Docker, Caddy com domínio público e Supabase real não est
 A primeira implantação retornava 500 em todas as chamadas da API porque não havia variáveis de ambiente. O log apontava a proteção que exige APP_ENV=production. A correção consistiu em vincular o projeto existente, configurar 11 secrets de Production/Preview, confirmar o Session pooler no painel Supabase e reconstruir a produção.
 
 Implantação verificada: `dpl_CC7Qz61PrUwVS8wkez2TeWxet4F6`, domínio https://projeto-invisivel.vercel.app . Onze rotas públicas devolveram 200, incluindo saúde em modo production, configuração Auth sem contas locais, estados, dados oficiais de Serra, issues, frontend e docs. API inexistente retornou JSON 404, voto sem login 401 e Origin externo 403. Nenhum dado sintético foi gravado nesta verificação pública.
+
+## Base inicial de reclamações oficiais — 22/11/2026
+
+Importação real CKAN 2025–2026: 50.736 linhas examinadas, 15.172 reclamações do recorte aceitas, 1.606 dossiês em 78 municípios. Serra 3.418/124; Vitória 2.355/120. Campos pessoais/narrativas/protocolos ausentes, coordenadas não inferidas e encerramento administrativo separado da resolução. 227 datas futuras ficaram indisponíveis, sem reinterpretar dia/mês.
+
+Testes cobrem idempotência, retirada e reaparecimento, reassociação, preservação de decisões humanas/recursos omitidos, datas, metadados e contagens. Migração SQLite preservou relatório vinculado e integridade referencial. A validação real PostgreSQL usou schema temporário e confirmou migração/importação, dossiês e reinício sem duplicação; o schema foi removido ao final. A conexão do pooler passou a qualificar o schema em SQL e selecioná-lo por transação, pois opções iniciais de sessão podem ser ignoradas pelo provedor.
+
+Verificação final desta atualização: **138 testes Python**, **23 testes de interface**, TypeScript/build e **sete grupos Chromium aprovados**. Em PostgreSQL isolado, migração de tabela antiga + importação completa validaram 124 dossiês/3.418 registros em Serra; reinício não duplicou dados. A aplicação passou a qualificar explicitamente as tabelas pelo schema para evitar fallback silencioso do pooler. A importação de produção concluiu com 12 tabelas protegidas por RLS, os totais de Serra/Vitória esperados e nove datas iniciais desconhecidas preservadas como null.

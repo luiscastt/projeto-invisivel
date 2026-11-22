@@ -91,8 +91,8 @@ export function Busy() {
   );
 }
 export function Empty({
-  title = "Nenhum problema publicado",
-  text = "Os relatos aparecem aqui após a análise da moderação.",
+  title = "Nenhum dossiê publicado",
+  text = "Nenhum dossiê publicado nesta base; isso não indica ausência de problemas no município.",
   action = true,
 }: {
   title?: string;
@@ -141,6 +141,11 @@ export function IssueRow({ issue }: { issue: Issue }) {
           {issue.is_demo ? "· Demonstração" : ""}
         </small>
         <h3>{issue.title}</h3>
+        <small>
+          {issue.origin === "official" ? "Fonte oficial · Dossiê temático" : "Origem comunitária"}
+          {issue.origin === "official" && <> · {issue.official_records_count ?? "—"} registros oficiais</>}
+          {" · "}{issue.reports_count} relatos na plataforma
+        </small>
         <p>
           <MapPin size={13} />
           {[issue.neighborhood, issue.municipality_name]

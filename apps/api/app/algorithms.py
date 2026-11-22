@@ -22,7 +22,8 @@ def distance(a, b):
 def similarity(a, b):
     if a["municipality_code"] != b["municipality_code"]:
         return {"score": 0, "distance_meters": None, "interpretation": "different_municipality"}
-    meters = distance((a["latitude"], a["longitude"]), (b["latitude"], b["longitude"]))
+    has_points = all(v is not None for v in [a.get("latitude"), a.get("longitude"), b.get("latitude"), b.get("longitude")])
+    meters = distance((a["latitude"], a["longitude"]), (b["latitude"], b["longitude"])) if has_points else None
     text_a, text_b = normalize(a.get("description", a.get("summary", ""))), normalize(b.get("description", b.get("summary", "")))
     words_a, words_b = set(text_a.split()), set(text_b.split())
     overlap = len(words_a & words_b) / max(1, len(words_a | words_b))
@@ -31,11 +32,11 @@ def similarity(a, b):
     if a.get("created_at") and b.get("created_at"):
         days = abs((datetime.fromisoformat(a["created_at"]) - datetime.fromisoformat(b["created_at"])).total_seconds()) / 86400
         temporal = max(0, 1 - days / 180)
-    score = .4 * max(0, 1 - meters / 750) + .35 * textual + .15 * (a["category"] == b["category"]) + .1 * temporal
+    score = (.4 * max(0, 1 - meters / 750) if meters is not None else 0) + .35 * textual + .15 * (a["category"] == b["category"]) + .1 * temporal
     # Distinct categories are never a strong suggestion, even at the same point.
     if a["category"] != b["category"]:
         score = min(score, .64)
-    return {"score": round(score, 4), "distance_meters": round(meters), "interpretation": "strong" if score >= .85 else "review" if score >= .65 else "distinct"}
+    return {"score": round(score, 4), "distance_meters": round(meters) if meters is not None else None, "interpretation": "strong" if score >= .85 else "review" if score >= .65 else "distinct"}
 
 
 def detect_flags(text):
