@@ -11,5 +11,4 @@ dev = ["pytest>=8,<10", "pytest-cov>=6,<8", "httpx2>=2,<3"]
 [tool.pytest.ini_options]
 pythonpath = ["apps/api", "."]
 testpaths = ["apps/api/tests", "pipelines/tests"]
-addopts = "--basetemp=work/pytest"
 filterwarnings = ["error::DeprecationWarning:app.*"]
