@@ -119,3 +119,10 @@ class IngestionJob(Base):
     status: Mapped[str] = mapped_column(String(20))
     result: Mapped[dict] = mapped_column(JSON)
     created_at: Mapped[str] = mapped_column(String(40), default=now)
+
+
+class StorageDeletion(Base):
+    __tablename__ = "storage_deletions"
+    id: Mapped[str] = mapped_column(String(64), primary_key=True, default=uid)
+    path: Mapped[str] = mapped_column(Text)
+    created_at: Mapped[str] = mapped_column(String(40), default=now)

@@ -234,7 +234,7 @@ npm run test:e2e
 
 Foram exercitados: território, duplicidades, privacidade, aprovação/complemento, original e versões, voto substituído/removido, simulação determinística, imagens sem EXIF, permissões, revogação administrativa, exclusão, falha de commit, URLs ambíguas, rate limiting, esclarecimentos, retirada de evidência e preservação de cache. No navegador: painel real, mapa visível, formulário, moderação, votos, comparação, rotas, viewport móvel de 390 px, PWA offline e ausência de cache privado/erros de página.
 
-Os testes executados usam SQLite e identidade simulada nos contratos Supabase. **Docker, PostgreSQL/PostGIS e Supabase reais ainda precisam de validação no ambiente de implantação**; não são apresentados como já provisionados.
+A suíte automatizada usa SQLite e contratos simulados, e a integração real PostgreSQL/Supabase Auth/Storage também foi exercitada com dados temporários isolados e removidos ao final. **Docker, PostGIS e a implantação Vercel ainda precisam de validação no ambiente de destino**. Veja [a verificação da integração](docs/supabase.md).
 
 Roteiro sugerido:
 
@@ -278,3 +278,7 @@ Execute a segunda migração depois que a API criar as tabelas. `001` habilita P
 O motor do MVP calcula duplicidade em Python/Shapely. Índices PostgreSQL ficam preparados; não há troca automática para SQL geoespacial. Antes de grande volume, mova agregações/paginação para SQL, compartilhe o rate limiter e publique snapshots por geração. A busca nacional automática de notícias, push, embeddings, ranking sem dados suficientes, protocolos oficiais automáticos e previsão causal continuam fora do MVP.
 
 Veja a [especificação original](docs/superpowers/specs/2026-11-20-invisivel.md), o [contrato da API](docs/api-contract.md) e as [decisões da entrega](docs/architecture/decisions.md).
+
+## Vercel Services e Supabase
+
+Dois serviços em `vercel.json`: FastAPI em `/api` e Vite nas demais rotas. PostgreSQL, Auth e fotos em Storage privado estão integrados ao Supabase e foram verificados com fluxo real. Consulte [integração Supabase e execução local](docs/supabase.md) e [configuração Vercel](docs/vercel.md). Não houve deploy Vercel validado: faltam autenticação/vínculo na Vercel e configuração do pooler/domínio de implantação.

@@ -14,8 +14,14 @@
     "sync:es": "node scripts/python.mjs -m pipelines.es_sync --output data/official",
     "import:sinisa": "node scripts/python.mjs -m pipelines.sinisa",
     "test:e2e": "node scripts/e2e.mjs",
-    "cleanup": "node scripts/python.mjs -m app.maintenance"
+    "cleanup": "node scripts/python.mjs -m app.maintenance",
+    "start:supabase": "node scripts/supabase.mjs",
+    "vercel:env": "node scripts/vercel-env.mjs"
   },
-  "engines": {"node": ">=22.12"},
-  "devDependencies": {"playwright": "1.65.1"}
+  "engines": {
+    "node": ">=22.12"
+  },
+  "devDependencies": {
+    "playwright": "1.65.1"
+  }
 }

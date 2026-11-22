@@ -37,7 +37,10 @@ export function Login() {
           ? await client.auth.signUp({
               email,
               password,
-              options: { data: { display_name: name } },
+              options: {
+                data: { display_name: name },
+                emailRedirectTo: window.location.origin + "/entrar",
+              },
             })
           : await client.auth.signInWithPassword({ email, password });
         if (result.error) throw result.error;

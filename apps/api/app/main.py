@@ -11,7 +11,7 @@ from fastapi.exceptions import RequestValidationError
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 from sqlalchemy.orm import Session
 from .config import Settings, ROOT
-from .db import Base, make_engine
+from .db import Base, make_engine, initialize_database
 from . import models, security, territories, issues, moderation, uploads, simulations, official_context
 from .seed import bootstrap
 from .http_limits import RequestSizeLimit
@@ -22,15 +22,13 @@ log = logging.getLogger("invisivel")
 def create_app(settings=None):
     settings = settings or Settings()
     settings.check_production()
-    settings.data_dir.mkdir(parents=True, exist_ok=True)
-    engine = make_engine(settings.database_url)
+    if settings.storage_provider == "local":
+        settings.data_dir.mkdir(parents=True, exist_ok=True)
+    engine = make_engine(settings.database_url, schema=settings.database_schema)
 
     @asynccontextmanager
     async def lifespan(app):
-        Base.metadata.create_all(engine)
-        with Session(engine) as db:
-            bootstrap(db, settings)
-            db.commit()
+        initialize_database(engine, settings)
         yield
         engine.dispose()
 

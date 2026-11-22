@@ -7,8 +7,9 @@ from fastapi import APIRouter, Depends, HTTPException, Request, Response
 from sqlalchemy import select, delete
 from sqlalchemy.orm import Session
 from .db import get_db, now
-from .models import User, AuthSession, Report, Vote, Evidence, Audit
+from .models import User, AuthSession, Report, Vote, Evidence, Audit, StorageDeletion
 from .schemas import Login, Register, DeleteAccount, Clarification
+from .storage import delete_evidence
 
 router = APIRouter(prefix="/auth", tags=["Autenticação"])
 COOKIE = "invisivel_session"
@@ -182,9 +183,11 @@ def delete_account(body: DeleteAccount, request: Request, response: Response, us
             report.moderation_status = "rejected"
             report.flags = []
             report.reason = "Conteúdo privado removido a pedido do titular."
-    remove_paths = []
+    pending_deletions = []
     for evidence in db.scalars(select(Evidence).where(Evidence.owner_id == user.id, Evidence.approved == False)):
-        remove_paths.append(request.app.state.settings.data_dir / evidence.path)
+        pending = StorageDeletion(path=evidence.path)
+        db.add(pending)
+        pending_deletions.append(pending)
         db.delete(evidence)
     user.email = f"deleted-{user.id}@invalid.local"
     user.display_name = "Conta excluída"
@@ -192,12 +195,15 @@ def delete_account(body: DeleteAccount, request: Request, response: Response, us
     user.deleted = True
     db.add(Audit(actor_id=user.id, action="account_deleted", target_id=user.id, reason="Solicitação do titular; contribuições públicas preservadas de forma pseudonimizada."))
     db.commit()
-    # Files are only removed after durable DB deletion. A disk failure leaves an inaccessible orphan.
+    # The durable queue retains paths until storage confirms their removal.
     import logging
-    for path in remove_paths:
+    for pending in pending_deletions:
         try:
-            path.unlink(missing_ok=True)
-        except OSError:
-            logging.getLogger("invisivel").warning("Arquivo órfão pendente de limpeza: %s", path.name)
+            delete_evidence(request.app.state.settings, pending.path)
+        except (HTTPException, OSError):
+            logging.getLogger("invisivel").warning("Arquivo órfão pendente de limpeza após exclusão da conta.")
+        else:
+            db.delete(pending)
+    db.commit()
     response.delete_cookie(COOKIE, path="/")
     return {"ok": True, "note": "Dados da aplicação removidos/pseudonimizados. Se usou Supabase, solicite também a exclusão da identidade ao operador."}

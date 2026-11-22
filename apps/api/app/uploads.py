@@ -1,13 +1,13 @@
 import io
 import warnings
-from pathlib import Path
 from PIL import Image, ImageOps, UnidentifiedImageError
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Form, Request
-from fastapi.responses import FileResponse
+from fastapi.responses import Response
 from sqlalchemy.orm import Session
 from .db import get_db, uid
 from .models import Evidence
 from .security import require_user, optional_user
+from .storage import put_evidence, read_evidence
 
 router = APIRouter(tags=["Evidências"])
 Image.MAX_IMAGE_PIXELS = 20_000_000
@@ -39,9 +39,7 @@ async def upload(request: Request, file: UploadFile = File(...), caption: str = 
         raise HTTPException(422, "Imagem inválida ou com dimensões excessivas.")
     id_ = uid()
     relative = f"uploads/{id_}.jpg"
-    path = request.app.state.settings.data_dir / relative
-    path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_bytes(output.getvalue())
+    put_evidence(request.app.state.settings, relative, output.getvalue())
     db.add(Evidence(id=id_, owner_id=user.id, path=relative, caption=caption))
     return {"id": id_, "caption": caption}
 
@@ -51,7 +49,7 @@ def media(evidence_id: str, request: Request, user=Depends(optional_user), db: S
     evidence = db.get(Evidence, evidence_id)
     if evidence is None or (not evidence.approved and not (user and (user.id == evidence.owner_id or user.role == "admin"))):
         raise HTTPException(404, "Evidência não disponível publicamente.")
-    path = request.app.state.settings.data_dir / evidence.path
-    if not path.is_file():
+    content = read_evidence(request.app.state.settings, evidence.path)
+    if content is None:
         raise HTTPException(404, "Arquivo indisponível.")
-    return FileResponse(path, media_type="image/jpeg", headers={"Cache-Control": "no-store", "X-Content-Type-Options": "nosniff", "Content-Disposition": "inline"})
+    return Response(content, media_type="image/jpeg", headers={"Cache-Control": "no-store", "X-Content-Type-Options": "nosniff", "Content-Disposition": "inline"})

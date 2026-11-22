@@ -15,3 +15,4 @@ playwright-report/
 test-results/
 data/uploads/
 data/official/sinisa-municipalities.json
+.vercel/

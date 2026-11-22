@@ -26,9 +26,20 @@ PostgreSQL/PostGIS, Docker, Caddy com domínio público e Supabase real não est
 - Coletas CNES, Obrasgov e Portal da Transparência: HTTP 200, paginação completa e manifestos sem erros.
 - SINISA: XLSX fornecido importado sem alterar o original; 5.570 municípios, referência 2023; 7 testes do importador.
 - Escolas SEDU/ES: 376 registros; ouvidoria estadual: 27.536 registros de 2025 processados, com publicação exclusivamente agregada.
-- Suite atual: **65 testes Python** e **11 testes de interface**, com TypeScript e build aprovados. Chromium verifica seis grupos, incluindo as novas abas oficiais.
+- Suite das integrações oficiais antes do Supabase: **65 testes Python** e **11 testes de interface**, com TypeScript e build aprovados. Chromium verifica seis grupos, incluindo as novas abas oficiais.
 - A revisão adicional verificou ausência de CPF, e-mail e telefone nos campos publicados e a exclusão de protocolos individuais da ouvidoria.
 - Coordenadas de cadastros incompatíveis com os limites oficiais são mantidas nas listas e excluídas dos marcadores. A malha IBGE utiliza a qualidade máxima disponível na API, com tolerância cartográfica de 0,002 grau para os pontos de contexto.
 - Falhas de coleta e ausência da chave de Transparência ficam explícitas; a data do último snapshot não é reescrita como se houvesse nova coleta.
 - A paginação reinicia ao trocar de município. Arquivos estáticos/PWA não consomem o limite de requisições da API.
 - Chave real permanece em `.env` ignorado. A inspeção dos blobs preparados para commit não encontrou a chave, banco local, uploads privados ou XLSX original.
+
+## Supabase e Vercel — 22/11/2026
+
+- Suíte final: **105 testes Python aprovados**, incluindo Storage, fila de exclusão com repetição, isolamento de schema, chaves públicas e logs sanitizados.
+- **11 testes de interface**, TypeScript e build Vite aprovados.
+- Chromium: seis grupos aprovados, incluindo moderação, votos, abas oficiais, layout móvel e PWA sem cache privado.
+- Supabase real: conexão PostgreSQL TLS e inicialização no schema privado; 11 tabelas com RLS e sem grants diretos para anon/authenticated. Bucket invisivel-evidence privado, restrito a JPEG.
+- Fluxo real com schema/identidade/objetos temporários: login, identidade persistida, envio privado de foto, EXIF removido, anonimato antes da aprovação, relato, moderação e voto. Limpeza dos dados sintéticos confirmada.
+- vercel.json conferido contra as propriedades do schema publicado, usando compatibilidade Draft 7 porque a declaração Draft 4 publicada contém exclusiveMinimum numérico. Isso não substitui um build/deploy Vercel real.
+- CLI Vercel 66.6.0 executada; vercel dev parou na autenticação. Não houve deploy Vercel validado. Faltam login/vínculo, pooler e URLs de retorno do domínio final.
+- Credenciais reais permaneceram em work/ e .env ignorados. Nenhum segredo foi incluído no commit.
