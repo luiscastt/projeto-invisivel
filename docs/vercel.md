@@ -1,6 +1,6 @@
 # Vercel Services + Supabase
 
-Configuração de serviços preparada no repositório. A integração Supabase foi validada de verdade; o deploy Vercel ainda depende de autenticação/vínculo da conta e confirmação da conexão de pooler e do domínio final.
+Implantação de produção validada em 22/11/2026: https://projeto-invisivel.vercel.app . Serviços app (FastAPI) e web (Vite), PostgreSQL via Session pooler confirmado no painel Supabase e bucket de fotos privado.
 
 ## Serviços
 
@@ -44,7 +44,7 @@ npx vercel@66.6.0 deploy --prod
 
 Antes de `vercel:env`, confirme o DATABASE_URL do pooler em `work/supabase-production.env`. O script envia variáveis por stdin para Preview e Production, como secrets; não inclui credenciais nos argumentos nem nos logs. Requer `.vercel/project.json` já vinculado e não cria projetos automaticamente.
 
-A tentativa desta sessão com `vercel dev` encontrou ausência de credenciais e abriu login; não houve autenticação nem deploy concluído. A senha PostgreSQL e as chaves Supabase não substituem login Vercel.
+A configuração inicial não possuía variáveis de ambiente, o que impedia importar index.py e causava FUNCTION_INVOCATION_FAILED. Após autenticação da CLI como luiscastt, o checkout foi vinculado ao projeto existente; 11 variáveis foram enviadas como secrets para Production e Preview, e a implantação foi reconstruída. A nova produção dpl_CC7Qz61PrUwVS8wkez2TeWxet4F6 foi verificada no domínio público. A senha PostgreSQL e as chaves Supabase não substituem login Vercel.
 
 ## Dados e testes
 
@@ -55,3 +55,9 @@ Verifique `/`, `/dados`, `/api/v1/health`, `/api/v1/auth/config`, `/api/docs`, a
 O rate limiter atual é por instância; não é uma quota distribuída entre Functions. O MVP mantém os controles locais e precisa dessa evolução antes de receber grande volume.
 
 Referências: https://vercel.com/docs/services, https://vercel.com/docs/services/routing, https://vercel.com/docs/services/bindings, https://vercel.com/docs/frameworks/backend/fastapi e https://supabase.com/docs/guides/database/connecting-to-postgres.
+
+## Verificação de produção em 22/11/2026
+
+HTTP 200 confirmado em `/`, `/dados`, `/api/v1/health`, `/api/v1/auth/config`, `/api/v1/states`, resumo/contexto/cadastros oficiais de Serra, `/api/v1/issues`, `/api/docs` e `/api/openapi.json`. A saúde informa production e o login usa Supabase, sem contas locais. Rota inexistente retorna JSON 404; mutação sem login retorna 401; origem externa retorna 403. A chave secreta não aparece nas respostas verificadas.
+
+A região e o hostname de Session pooler foram obtidos pelo painel do próprio projeto, não por sondagem de servidores. As credenciais permaneceram nos secrets Vercel e em arquivos locais ignorados. A entrega de e-mails e URLs de retorno do Supabase Auth continuam exigindo validação específica; estes testes não enviaram e-mails nem criaram relatos públicos reais.

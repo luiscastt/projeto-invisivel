@@ -43,3 +43,9 @@ PostgreSQL/PostGIS, Docker, Caddy com domínio público e Supabase real não est
 - vercel.json conferido contra as propriedades do schema publicado, usando compatibilidade Draft 7 porque a declaração Draft 4 publicada contém exclusiveMinimum numérico. Isso não substitui um build/deploy Vercel real.
 - CLI Vercel 66.6.0 executada; vercel dev parou na autenticação. Não houve deploy Vercel validado. Faltam login/vínculo, pooler e URLs de retorno do domínio final.
 - Credenciais reais permaneceram em work/ e .env ignorados. Nenhum segredo foi incluído no commit.
+
+## Correção da implantação Vercel — 22/11/2026
+
+A primeira implantação retornava 500 em todas as chamadas da API porque não havia variáveis de ambiente. O log apontava a proteção que exige APP_ENV=production. A correção consistiu em vincular o projeto existente, configurar 11 secrets de Production/Preview, confirmar o Session pooler no painel Supabase e reconstruir a produção.
+
+Implantação verificada: `dpl_CC7Qz61PrUwVS8wkez2TeWxet4F6`, domínio https://projeto-invisivel.vercel.app . Onze rotas públicas devolveram 200, incluindo saúde em modo production, configuração Auth sem contas locais, estados, dados oficiais de Serra, issues, frontend e docs. API inexistente retornou JSON 404, voto sem login 401 e Origin externo 403. Nenhum dado sintético foi gravado nesta verificação pública.

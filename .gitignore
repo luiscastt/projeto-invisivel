@@ -16,3 +16,6 @@ test-results/
 data/uploads/
 data/official/sinisa-municipalities.json
 .vercel/
+
+.vercel
+.env*

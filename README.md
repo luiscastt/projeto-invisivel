@@ -248,7 +248,7 @@ Roteiro sugerido:
 
 ## Implantação permanente em HTTPS
 
-Foram entregues `Dockerfile`, `compose.yaml`, `Caddyfile`, migrações, CI e `.env.example`. **Não houve publicação remota**: domínio, servidor e projeto Supabase de produção não estavam configurados. O endereço local está pronto para teste.
+O MVP está publicado em **https://projeto-invisivel.vercel.app**, com serviços FastAPI/Vite na Vercel e PostgreSQL/Auth/Storage privado no Supabase. Foram entregues também `Dockerfile`, `compose.yaml`, `Caddyfile`, migrações, CI e `.env.example` como alternativa de hospedagem. O procedimento abaixo se refere à alternativa Docker.
 
 Em servidor com Docker Compose, DNS e portas 80/443, configure `.env` sem versioná-lo:
 
@@ -281,4 +281,4 @@ Veja a [especificação original](docs/superpowers/specs/2026-11-20-invisivel.md
 
 ## Vercel Services e Supabase
 
-Dois serviços em `vercel.json`: FastAPI em `/api` e Vite nas demais rotas. PostgreSQL, Auth e fotos em Storage privado estão integrados ao Supabase e foram verificados com fluxo real. Consulte [integração Supabase e execução local](docs/supabase.md) e [configuração Vercel](docs/vercel.md). Não houve deploy Vercel validado: faltam autenticação/vínculo na Vercel e configuração do pooler/domínio de implantação.
+Dois serviços em `vercel.json`: FastAPI em `/api` e Vite nas demais rotas. PostgreSQL, Auth e fotos em Storage privado estão integrados ao Supabase e foram verificados com fluxo real. Consulte [integração Supabase e execução local](docs/supabase.md) e [configuração Vercel](docs/vercel.md). O deploy Vercel está validado no domínio público: API, dados oficiais, configuração Supabase e controles de origem/acesso responderam como esperado. A entrega de e-mails e os redirecionamentos de confirmação do Supabase ainda precisam de validação específica.
